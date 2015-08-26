@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>jquery-include</title>
+	<style>
+
+	body {
+		margin: 0;
+	}
+	article {
+		position: relative;
+		width: 90%;
+		margin: 0 auto;
+		font-size: 13px;
+	}
+	header {
+		background-color: #222;
+		color: #fff;
+		padding: 1em;
+		margin-bottom: 3em;
+	}
+	header h1 {
+		margin: 0;
+	}
+	section {
+		box-sizing: border-box;
+		padding: 1em;
+	}
+	section.col {
+		width: 50%;
+		float: left;
+	}
+	pre code {
+		display: block;
+		background-color: #333;
+		color: #fff;
+		padding: 1em;
+		overflow: auto;
+		border-radius: .3em;
+	}
+	[aria-hidden] {
+		display: none;
+	}
+
+	.clearfix:after {
+		content: "";
+		height: 0;
+		clear: both;
+		display: table;
+	}
+
+	.hello {
+		background-color: #369;
+		color: #fff;
+		padding: 1em;
+		text-align: center;
+	}
+
+	</style>
+</head>
+<body>
+
+	<article>
+		<header>
+			<h1>Demo: jquery-include</h1>
+		</header>
+
+		<section data-include="modules/hello.html" data-include-ready="widgetsReady.fadeIn" aria-hidden></section>
+
+		<div class="clearfix">
+			<section data-include="modules/normal.html" data-include-ready="widgetsReady.slideDown" class="col" aria-hidden></section>
+			<section data-include="modules/info.html" data-include-render="widgets.info" data-include-ready="widgetsReady.slideDown" class="col" aria-hidden></section>
+		</div>
+		<section data-include="#usage" data-include-render="widgets.usage"></section>
+	</article>
+
+	<script id="usage" type="text/template">
+		<h1>Usage</h1>
+		<pre><code>
+			<!-- Include remote file -->
+			<div data-include="the/path/to/template-foo.html"></div>
+
+			<!-- Include remote file with render func -->
+			<div data-include="the/path/to/template-bar.html" data-include-render="widgets.bar"></div>
+
+			<!-- Include content from in-page element with render func -->
+			<div data-include="#template-baz" data-include-render="widgets.baz"></div>
+		</code></pre>
+	</script>
+
+	<script src="../bower_components/jquery/dist/jquery.js"></script>
+	<script src="../src/jquery-include.js"></script>
+
+	<script>
+
+	var widgets = {
+		info: function(content){
+			var df = $.Deferred();
+			$.getJSON("../package.json").done(function(data){
+				content = content.replace("{{author}}", $("<i>").text(data.author).html())
+				.replace("{{version}}", data.version)
+				.replace("{{license}}", data.license);
+				df.resolve(content);
+			});
+			return df;
+		},
+		usage: function(content){
+			var el, code;
+			el = $("<div>").append(content);
+			code = el.find("code");
+			code.text(code.html().replace(/\t/g, "").replace(/^\n/, ""));
+			return el.html();
+		}
+	};
+
+	var widgetsReady = {
+		fadeIn: function(node){
+			node.stop().delay(500).fadeIn();
+		},
+		slideDown: function(node){
+			node.stop().delay(1000).slideDown();
+		}
+	};
+
+	$.include.ready(function(){
+		console.log("all ready");
+	});
+
+	</script>
+</body>
+</html>
